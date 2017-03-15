@@ -1,0 +1,39 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26124.0
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{6E3E7B02-02D2-4152-866B-31FE26B55A19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KSS.Tests", "tests\KSS.Tests\KSS.Tests.csproj", "{E79FB266-FA1F-4184-AB1F-E41450EB94EB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB}.Debug|x64.ActiveCfg = Debug|x64
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB}.Debug|x64.Build.0 = Debug|x64
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB}.Debug|x86.ActiveCfg = Debug|x86
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB}.Debug|x86.Build.0 = Debug|x86
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB}.Release|x64.ActiveCfg = Release|x64
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB}.Release|x64.Build.0 = Release|x64
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB}.Release|x86.ActiveCfg = Release|x86
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E79FB266-FA1F-4184-AB1F-E41450EB94EB} = {6E3E7B02-02D2-4152-866B-31FE26B55A19}
+	EndGlobalSection
+EndGlobal
