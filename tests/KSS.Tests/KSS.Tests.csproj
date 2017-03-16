@@ -17,7 +17,8 @@
     <PackageReference Include="Microsoft.DotNet.InternalAbstractions" Version="1.0.0" />
     <PackageReference Include="StructureMap.AspNetCore" Version="*" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="1.1.0" />
-
+    <PackageReference Include="NPoco" Version="*" />
+    <PackageReference Include="SapientGuardian.MySql.Data" Version="*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,7 +39,7 @@
     <None Update="appsettings*.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\list-anime.html">
+    <None Update="TestData\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestData\selected-anime.html">
