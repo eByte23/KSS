@@ -251,3 +251,5 @@ paket-files/
 .idea/
 *.sln.iml
 **/*/.DS_STORE
+**/*/node_modules
+appsettings.test.json
