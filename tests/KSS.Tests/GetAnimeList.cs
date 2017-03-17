@@ -326,11 +326,17 @@ namespace KSS.Tests
             Id = episodeId.HasValue ? episodeId.Value : Guid.NewGuid();
         }
 
+        [ColumnAttribute("id")]
         public Guid Id { get; private set; }
+        [ColumnAttribute("show_id")]
         public Guid ShowId { get; private set; }
+        [ColumnAttribute("number")]
         public int Number { get; set; }
+        [ColumnAttribute("links")]
         public string Link { get; set; }
+        [ColumnAttribute("file_name")]
         public string FileName { get; set; }
+        [ColumnAttribute("download_links"),SerializedColumnAttribute]
         public List<EpisodeDownloadLink> DownloadLinks { get; set; }
 
         public class EpisodeDownloadLink
