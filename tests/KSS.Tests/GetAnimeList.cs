@@ -13,24 +13,27 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using NPoco;
+using Xunit.Abstractions;
 
 namespace KSS.Tests
 {
     public class GetAnimeList : IClassFixture<TestContext>
     {
-        public List<ShowData> _shows = new List<ShowData>();
+        public List<Show> _shows = new List<Show>();
         private TestContext _context;
         private readonly Settings _settings;
         private readonly IDatabase _db;
+        private readonly ITestOutputHelper _output;
 
-        public GetAnimeList(TestContext context)
+        public GetAnimeList(TestContext context, ITestOutputHelper output)
         {
             _context = context;
             _settings = _context.Container.GetInstance<Settings>();
             _db = _context.Container.GetInstance<IDatabase>();
+            _output = output;
         }
 
-        [Fact(Skip="already done")]
+        //[Fact]//(Skip="already done")]
         public void Move()
         {
             var pp = Parallel.For(1, 143, (i) =>
@@ -51,7 +54,8 @@ namespace KSS.Tests
             });
         }
 
-        [Fact(Skip = "justdo")]
+        //       [Fact(Skip = "justdo")]
+        //[Fact]
         public void GetAnimeAllList()
         {
             HtmlDocument currentPage = TestUtils.GetTestDataPage(Path.Combine("TestData", "list-anime.html"));
@@ -76,7 +80,9 @@ namespace KSS.Tests
                  //         _shows.Clear();
                  //     }
                  // }
-                 var doc = TestUtils.GetDataPage(File.ReadAllText(Path.Combine(_context.CurrentPath, "TestData", "2017-03-16", "lists", $"page-{i}.html")));
+                 //var doc = TestUtils.GetDataPage(File.ReadAllText(Path.Combine(_context.CurrentPath, "TestData", "2017-03-16", "lists", $"page-{i}.html")));
+                 var doc = TestUtils.GetDataPage(getContentForId(i));
+                 File.ReadAllText(Path.Combine(_context.CurrentPath, "TestData", "2017-03-17", "lists", $"page-{i}.html"));
 
                  var alls = doc.DocumentNode.Descendants().ToList();
 
@@ -102,10 +108,10 @@ namespace KSS.Tests
             //}
         }
 
-        [Fact(Skip = "lets not ddos")]
+        //[Fact(Skip = "lets not ddos")]
         public void GetAnimeListFromPage()
         {
-            List<ShowData> shows = new List<ShowData>();
+            List<Show> shows = new List<Show>();
             HtmlDocument currentPage = TestUtils.GetTestDataPage(Path.Combine("TestData", "list-anime.html"));
             var all = currentPage.DocumentNode.Descendants().ToList();
 
@@ -123,24 +129,71 @@ namespace KSS.Tests
             });
         }
 
-        [FactAttribute]
+        //[FactAttribute]
+        public void UpdateDownloadLinksForId()
+        {
+            var id = Guid.Parse("162e7fd0-0b04-11e7-a3c3-843835644532");
+            var ep = _db.SingleById<Episode>(id);
+            var client = _context.Container.GetInstance<HttpClient>();
+            var result = client.GetAsync($"{_settings.BaseUrl}{ep.Link}").Result;
+
+
+
+
+        }
+
+        [FactAttribute(Skip="we can skip now")]
         public void GetAllEpisodesAndExtraData()
         {
             HtmlDocument currentPage = TestUtils.GetTestDataPage(Path.Combine("TestData", "selected-anime-multi.html"));
             var all = currentPage.DocumentNode.Descendants().ToList();
-            var blocks = all.Where(x=> x.Attributes.Any(y=>y.Name == "class" && y.Value == "bigBarContainer"));
-            var informationBlockTable = blocks.Where(x=> x.ChildNodes.Any(y=>y.Attributes.Any(z=>z.Name == "class" && z.Value == "barTitle") && y.InnerText.Trim().ToUpperInvariant().Contains("INFORMATION"))).First();
+            var blocks = all.Where(x => x.Attributes.Any(y => y.Name == "class" && y.Value == "bigBarContainer"));
+            var informationBlockTable = blocks.Where(x => x.ChildNodes.Any(y => y.Attributes.Any(z => z.Name == "class" && z.Value == "barTitle") && y.InnerText.Trim().ToUpperInvariant().Contains("INFORMATION"))).First();
 
-            var episodesBlockTable = blocks.Where(x=> x.ChildNodes.Any(y=>y.Attributes.Any(z=>z.Name == "class" && z.Value == "barTitle") && y.InnerText.Trim().ToUpperInvariant().Contains("EPISODES"))).First();
+            var episodesBlockTable = blocks.Where(x => x.ChildNodes.Any(y => y.Attributes.Any(z => z.Name == "class" && z.Value == "barTitle") && y.InnerText.Trim().ToUpperInvariant().Contains("EPISODES"))).First();
 
             var episodesBlockTableNodes = episodesBlockTable.Descendants().SelectMany(x => x.Elements("table").Where(y => y.Attributes.Any(z => z.Name == "class" && z.Value == "listing"))).FirstOrDefault();
 
             var trTags = episodesBlockTableNodes.Elements("tr").Where(x => x.InnerText.Trim() != string.Empty && !x.Elements("th").Any());
+            var showId = Guid.Parse("d051c568-5c61-4b68-9063-f6216747e1f5");
+            var li = trTags.ToList().Select(x =>
+            {
+                var dd = getEpisodeFromRow(showId, x);
+                return dd;
+            });
 
-            var a= "";
-            File.WriteAllText(Path.Combine(_context.CurrentPath,"test.s"),string.Join("",trTags.Select(x=> x.OuterHtml).ToArray()));
+            _db.InsertBatch(li);
+            var a = "";
+            //File.WriteAllText(Path.Combine(_context.CurrentPath, "test.s"), string.Join("", trTags.Select(x => x.OuterHtml).ToArray()));
         }
 
+        private Episode getEpisodeFromRow(Guid showId, HtmlNode node)
+        {
+            var epidsode = new Episode(showId, Guid.NewGuid());
+            var tdTags = node.Elements("td").ToList();
+            var nameTdTag = tdTags[0];
+            var nameATag = nameTdTag.Element("a");
+            var name = nameATag.InnerText.Trim();
+            var link = nameATag.Attributes.Where(x => x.Name == "href").First().Value;
+
+            // var imgTags = nameTdTag.Elements("img");
+            // var recentlyUpdated = imgTags.Any(x => x.Attributes.Any(y => y.Name == "Title" && y.Value.Trim() == "Just Updated"));
+            // var popular = imgTags.Any(x => x.Attributes.Any(y => y.Name == "Title" && y.Value.Trim() == "Popular anime"));
+            // var statusTdTag = tdTags[1];
+            // var hasEpisodeLink = statusTdTag.Elements("a").Any();
+            // var status = statusTdTag.InnerText.Trim();
+
+            //e.g. /Anime/Dragon-Ball-Z/Episode-291?id=107391
+            epidsode.Link = link;
+            _output.WriteLine(link);
+
+            _output.WriteLine(link.Split('/')[3].ToUpperInvariant());
+
+            epidsode.Number = int.Parse(link.Split('/')[3].ToUpperInvariant().Replace("EPISODE-","").Split('?')[0]);
+            epidsode.FileName="";
+
+            return epidsode;
+        }
 
         [Fact(Skip = "lets not ddos")]
         public void GetLastPageFromListPage()
@@ -183,41 +236,68 @@ namespace KSS.Tests
             Assert.True(content.Contains(_settings.Username));
         }
 
-        [Fact(Skip = "lets not ddos")]
-        public void getWeDecrypt()
+        [FactAttribute]
+        public void DDDD()
         {
-            string ciphertext = "53/yQ8DMR4ksmBB1ngrLE40LHptWnmG6WgYxAcx+UeeRLigllEuxarlaRV3y3Kn01nXBH66hmgCezdzNJ5ObyVu1aqaNkJfdyIIbl70VkY8Su0gqd/vWaHP8+1L0fP5wcd021Q/Rdixv1F4T2g/irZbaqEQLhz4OCWPHQVeXzykr+a1Y5Y8u8CHlL6D1urOjS+I9e1FrwWLv95ix5hZj3DV8JpslPxMK+7nRHIvkt5vueyWBqPq5y45q7q701h38+VRj70iLf+hP6K9BqUhdJ8JKHAWwJwDF3tpMUUCgwzc6iM6hqOWGQzT8joZAAVrJAuY+irJ7xBcHMK1uai/IMlSRzGm9q4D+MrVENzX7/O1A8kA7MJMT5s7Yf+ZUlrySO8JEo7uTsVeuZ1HL0uPz37ZWoEgE3DfS9YntONVcfj/didWK24dcO7dcgZVO7RS5ddBzpBpcOTzvyhpNtI+qH7KK6TtKTqkwbLnlZpHq/9/4A0XtAhf4Ti4R3oBk4zAM/yRySjJTnuIzXPztgTpZJ/L+TFIblNRiIF8auDGubqsuRB0I4ykNJfdufxpPuhU2mcHcGrCsba036DTgU973PJp6uiHkjaErQ9v1xa+2kjw/vp6VXTgmzoGGTNn4XwkljOPy6ADVeHJjRQ9U7TbUXbwuD6rcYdpId9UWR4xwrZKCItCW3y6NMUUQRq8BxXJCdv/81CxhEPjAuQJq3Ymr3aEBNQs46jZhZKlVErBXCKudBERyAlz8VZnWv+9F4tbzhkpixQntaJcMdlx5T8V9TbmOOk3uqg68noV+uQvTrhrtlRh1cEeLu4JEMax2S7wsnlwgPlj1wYcNzBksPmRmZogu7S3M8JB2Q1KL4ZvgvfSlPjmDBWtcDpXfuKQrBV2y/Aa6ovBJkJ5OJN5bRc5kBWONFwu5NTtxPLg2SWDK79MJQaI5Iiatf66gBPGf3N+g8khnLRWyT9n9mXKyMtj/+kMUQ/YF+89tFNlo4N9NVthz/pKhaBhCLtQSxAaWKqwPJ6p8+XAMLVfqSJ8dG2RPy0G0H+AFcSt8IrgQxndzwMb5Mjc1KVHSnxCAzhJzZrPt5Z3LRPRTffJdc5sKBs1i3IBEWPjt6dfLBB20hjYYwDojU+BdnrSUJ4BmGyUgv5qhZLoZyraQDyM6zc4d4Wq7nP0/B+2QoxXe5Oi0JgnP/JxpNoBm2WHIKq++CIFEvCaZbOZaKN6yv7puUKOwV76pjaEpIuuw6zeW4ooEfpj/mciU5ZPPbFmwanCmnADFc4ZNrViGBTqptdnIRLniMvFozZgsJfU6lDDRrBXmRuraOjGSh3R73qo2eX9aeeA2nH5O2EZK2f8wxI9uLII9Aq2nzVTNxd4iqL/+oC01r2U40U7sp9mVgfUa65QO2vBJTBF0I4YnkE0Rca4Cdj+sITDNPG+hQW5Hw/xuwII8jIt1P7n/OseZ3+vK8gVW4a78kk1wFQ8im745SnYCUnaPQKLgPbvvoUYV7tXgkx7WLedL/hacHldkuC2SVac8J38Bw77R03okBNtfxVmgNjnqO30lS/wzFpCLwr5UABtPbgkQ3aQxGMLQpbXXFdEjia6KYE0rEoDXKtSgFC44dDaKllfyLXDGgjSKUXYTpSkOl9uJrB3hK6sGjwlud4BJw9/aNzBIqFKFIpMIWoStFmT8ykP16Vjjnl6JvF7DwJh2iFMkRZ93BI4HcIWfodq5Sze4Qt/2B70HsKT0Y7SLuxq076o7TVAmW3ix+NR7KLQxIUdQYNjPIJxkgn2vRi5rLwfy0Q7a69QcoShQXBiDSyMphuILzN5MrJvyW6791H/mCU6yAIsVppD+bjG0cpcfbaPVIQ7Id89nJlrcQzZq2F5UuXhojcWed1rCLhKoBGoyRI4+7TGQEbd7F5bWFk66F+Z1jjbAWFX29vG8g7G27kzVMTRp+C9sXm7xZ7qu7QZoJyAJaVqZ6cB6XJOdoqa/tT34FKtbyAqE069vXRGrPfeHVFhB0CvIz0ZgQDfWe3YDd6gdc7QL5Bj8TalUc/Ajx63/rhJA+59v2jGNxTsNnGS9lEyLCFxqmzgk8XYFPYxUBES4Haz0xLmDztudAFJLL0JVqw3ruZLcSWEgdPe5uWuGd78/QATx8oaXZ05TKykCz5P8reOeKZEWYT+cuTymvtbXsLU58LQq5sa+eIMvW+8khyQrfrp/PhWcILWfEohwOjTYA6unqk7kmdAmGXRD5h2DpoXvMRLBmE8TcLG8npTKzqOAP9zyqaq8Lha+uQqFdYLeRbXSRkb536KnB14ChF857HEEHbIH/QiRBwymJJadXuGmvcDREO83eHk8kOLCdy1yDfNnDB9jT+F+XCWrb8egjtjQOrn3Ap8/eWOxc4jPy9Ii+DNBeV2LSZ3wcR/8sFcErQZU3FgdZZFYIcleVzWBjPoSRYfMgSxdt0h4lJJ6WfTJ3eID5FcVStOA6kLBl0VTJr/s6YVw2r8JT4dacYr5tNA6LsoKBBrlpJ7sdqG2mNqKAc86ucab/u05QNKcLIDG6GMi4I/lSpIY6okvkPXD7BpCtX00ht+Q90yv67G9TsqCTKlEHEg4eIxAXDWBRRcl+gyGMtAR7ws6MihZGGZEMj5eINnMWiy7GMOhPdQaPOBVDO3lwn8h4/FL71c20ajwwEal83iIRVwUar41tbqxIiEWLu1bP36xejACdDmHcTEzUoQfX7O2nOgGHUtQH5nPiiuEvKNiF3DqlEh5Su36dgjmw3qVKOFrAcHO6bJuezHx+zD3K2nlxRrpcHxq5UMFFKAzDrhTGGiceHtBDor/RPTJ5KBuhZQGB1YcPgtdwPp9qYs/WjssbLhqx09XEwyqxu9DLr4oF63j1isbQYzJcrdUinxreXOtXQmAa0xJjLeRHcK6tgbDzwsmPHH9lfqirh/xROedbz/teMegcYU2kkejXTJQQCgPLqmLaDg86SDdABN42YjZ1STs0+dPb6tbiMxJMCULmLBGBzVbzSOUgxC9TStgwJHUg9BFAMC/3qiGBXhCzVOm0CeodcXA0loIkAJMWagIHtr61yjfzs3QtOX2mli1dlfGFVVAo+V/qjLY/kjPv5JIhAR2btcnZ4YkQf2fhHUwrVkGzQw8KqjyGqJm5CyhkXar8dOq9IcZA3wr2eJvErhRpJtqLMliCMcAa6kTlcZjo0sypNL8+FoIg0OL7CD6Pe5UKIiAw/BDR3cudi4FKyrA8yDRK3rDawDWE00cNno+GwM8PbE59kVcYMcnW+20Xb2kHfGpfGlVJPSyog==";
-            string decryptedtext;
-
+            //new not working
+            string ciphertext = "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";
+            //old working
+            //string ciphertext = "V00qDmblNuTM/roJZvWVZON3ghygHAzk27mQbijAEYu15bBt4TJxdHVyHVVJuxmD0RytpIzh5AgepPVnUBHcYLy1eNKLhWH1ibe140OAUzXjJqISmFjRnwpRvaCWw1w49I3CSv4aCxW9qyhoV9Yb26YLlZEt0EanAbfjx1F5Hli6D5ik6CAYiEKsCalNATLzCU/OGTm0engA6ShD2OogZUlRD9HlOP8ciN5l0TDWNQdX5Oo1Rsjp5SyQ9/8zxjQchI1XM75QlVgtmfCLeVK0BA==";
             var a = new DownloadLinkCrypto();
-            var b = a.Decrypt(ciphertext);
-
-            Assert.Equal(ciphertext, a.Encrypt(b));
+            var b = a.Decrypt(ciphertext,(x) => { _output.WriteLine(x); return null;});
+            _output.WriteLine(b);
+            //Assert.NotEqual(ciphertext, a.Encrypt(b));
+            Assert.True(false);
         }
 
-        [Fact(Skip = "lets not ddos")]
+        [FactAttribute(Skip="for now")]
+        public async Task TestDownloadAsync()
+        {
+            var link = "https://redirector.googlevideo.com/videoplayback?id=978760c1828a980e&itag=59&source=webdrive&requiressl=yes&ttl=transient&mm=30&mn=sn-ab5l6nzs&ms=nxu&mv=m&pl=49&ei=vGzMWOmxI4arqQWZmou4Cg&mime=video/mp4&lmt=1482478747003967&mt=1489792101&ip=2604:a880:800:a1::796:9001&ipbits=0&expire=1489806588&sparams=ip,ipbits,expire,id,itag,source,requiressl,ttl,mm,mn,ms,mv,pl,ei,mime,lmt&signature=20854702F11C8314315BB2AC65E298259E6D24CC.A07CEACE81DCF67C605D677566B5760ADA626EF9&key=ck2&app=explorer&fmt_list=37/1920x1080&kparams=MTIyLjEwNy4xNTEuMTY4&upx=TW96aWxsYS81LjAgKE1hY2ludG9zaDsgSW50ZWwgTWFjIE9TIFggMTBfMTJfMykgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzU2LjAuMjkyNC44NyBTYWZhcmkvNTM3LjM2&tr=1";
+
+            HttpClient c = new HttpClient();
+            var b = await c.GetStreamAsync(link);
+
+            using(FileStream f = new FileStream("./file.mp4", FileMode.Create))
+            {
+                await b.CopyToAsync(f);
+            }
+        }
+
+        [Fact(Skip="a")]
         public void getNewAndDecrypt()
         {
+
             var client = _context.Container.GetInstance<HttpClient>();
             var result = client.GetAsync(_settings.BaseUrl + "/Anime/Dragon-Ball-Z/Episode-100?id=107200").Result;
             var content = result.Content.ReadAsStringAsync().Result;
+             _output.WriteLine(content);
             var all = TestUtils.GetDataPage(content);
-            string b = getDownloadLinks(all);
+            var b = getDownloadLinks(all);
 
-            Assert.NotNull(b);
-            Assert.True(b != string.Empty);
-            Assert.True(b.Contains("<a"));
+            // b.ToList().ForEach(x=>{
+            //     _output.WriteLine(x.OuterHtml);
+            // });
+
+            // Assert.NotNull(b);
+            // Assert.True(b != string.Empty);
+            // Assert.True(b.Contains("<a"));
         }
 
-        private static string getDownloadLinks(HtmlDocument all)
+        private IEnumerable<HtmlNode> getDownloadLinks(HtmlDocument all)
         {
             var d = all.DocumentNode.Descendants().ToList().Where(x => x.Id == "divDownload").FirstOrDefault();
 
             var a = d.Element("script").InnerHtml.Trim().Replace("document.write(ovelWrap('", "").Replace("'));", "");
-
+            _output.WriteLine(a);
             var crypto = new DownloadLinkCrypto();
-            var b = crypto.Decrypt(a);
-            return b;
+            var b = crypto.Decrypt(a,(x) => { _output.WriteLine(x); return null;});
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(b);
+
+            //_output.WriteLine(doc.DocumentNode.OuterHtml);
+            return doc.DocumentNode.Descendants().SelectMany(x=>x.Elements("a"));
         }
 
         private string getContentForId(int id)
@@ -227,9 +307,9 @@ namespace KSS.Tests
             return result.Content.ReadAsStringAsync().Result;
         }
 
-        private ShowData getShowFromRow(HtmlNode arg)
+        private Show getShowFromRow(HtmlNode arg)
         {
-            var show = new ShowData(Guid.NewGuid());
+            var show = new Show(Guid.NewGuid());
             var tdTags = arg.Elements("td").ToList();
             var nameTdTag = tdTags[0];
             var nameATag = nameTdTag.Element("a");
@@ -273,13 +353,13 @@ namespace KSS.Tests
     }
 
     [TableNameAttribute("shows"), PrimaryKeyAttribute("id", AutoIncrement = false)]
-    public class ShowData
+    public class Show
     {
-        public ShowData()
+        public Show()
         {
         }
 
-        public ShowData(Guid id)
+        public Show(Guid id)
         {
             Id = id;
         }
@@ -310,6 +390,7 @@ namespace KSS.Tests
         public ulong Views { get; set; }
     }
 
+    [TableNameAttribute("episodes")]
     public class Episode
     {
         public Episode()
@@ -327,16 +408,24 @@ namespace KSS.Tests
         }
 
         [ColumnAttribute("id")]
-        public Guid Id { get; private set; }
+        public Guid Id { get; set; }
+
         [ColumnAttribute("show_id")]
-        public Guid ShowId { get; private set; }
+        public Guid ShowId { get; set; }
+
+        [ColumnAttribute("link")]
+        public string Link {get;set;}
+
         [ColumnAttribute("number")]
         public int Number { get; set; }
-        [ColumnAttribute("links")]
-        public string Link { get; set; }
+
+        [ColumnAttribute("related_links")]
+        public List<string> RelatedLinks { get; set; }
+
         [ColumnAttribute("file_name")]
         public string FileName { get; set; }
-        [ColumnAttribute("download_links"),SerializedColumnAttribute]
+
+        [ColumnAttribute("download_links"), SerializedColumnAttribute]
         public List<EpisodeDownloadLink> DownloadLinks { get; set; }
 
         public class EpisodeDownloadLink

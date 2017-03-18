@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -31,10 +32,12 @@ namespace KSS
             }
         }
 
-        public string Decrypt(string ciperText)
+        public string Decrypt(string ciperText, Func<string,object> log)
         {
             byte[] ciperTextBytes = Convert.FromBase64String(ciperText);
+            //byte[] ciperTextBytes = Convert.FromBase64String(Encoding.UTF8.GetString(Encoding.Unicode.GetBytes(ciperText)));
             ICryptoTransform cr = _aes.CreateDecryptor();
+            //log(ciperTextBytes.Length.ToString());
             byte[] decryptedTextBytes = cr.TransformFinalBlock(ciperTextBytes, 0, ciperTextBytes.Length);
 
             return Encoding.UTF8.GetString(decryptedTextBytes);
@@ -52,12 +55,13 @@ namespace KSS
 
         public static byte[] HexStringToByteArray(string strHex)
         {
-            dynamic r = new byte[strHex.Length / 2];
-            for (int i = 0; i <= strHex.Length - 1; i += 2)
-            {
-                r[i / 2] = Convert.ToByte(Convert.ToInt32(strHex.Substring(i, 2), 16));
-            }
-            return r;
+            // dynamic r = new byte[strHex.Length / 2];
+            // for (int i = 0; i <= strHex.Length - 1; i += 2)
+            // {
+            //     r[i / 2] = Convert.ToByte(Convert.ToInt32(strHex.Substring(i, 2), 16));
+            // }
+            // return r;
+            return Enumerable.Range(0, strHex.Length / 2) .Select(x => Convert.ToByte(strHex.Substring(x * 2, 2), 16)) .ToArray();
         }
     }
 }
