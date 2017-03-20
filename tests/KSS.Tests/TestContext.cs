@@ -40,7 +40,7 @@ namespace KSS.Tests
                 c.For<Settings>().Use(ctx => ctx.GetInstance<IOptions<Settings>>().Value);
                 c.For<DownloadLinkCrypto>().Use(new DownloadLinkCrypto());
                 c.For<HttpClient>().Use(ctx => CloudFlareHandlerFactory.Build(ctx.GetInstance<Settings>()));
-                c.For<IDatabase>().Use(new Database("Server=127.0.0.1;Port=3306;Database=kss_test;Uid=root;Pwd=Kkk**881;",DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance));
+                c.For<IDatabase>().Use(new Database("Server=192.168.160.62;Port=3306;Database=kss_test;Uid=root;Pwd=Kkk**881;",DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance));
             });
         }
 

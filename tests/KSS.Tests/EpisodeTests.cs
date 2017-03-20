@@ -8,6 +8,7 @@ using KSS.Tests.utils;
 using NPoco;
 using Xunit;
 using Xunit.Abstractions;
+using KSS.Temp.Db;
 
 namespace KSS.Tests
 {
@@ -35,7 +36,7 @@ namespace KSS.Tests
            From TestData/Shows/<Show>/<Episode>.html parse and decrypt download links
            In this case TestData/Shows/Dragon
           */
-        [FactAttribute]
+        //[FactAttribute]
         public void GetDownloadLinksFromPage()
         {
             _db.OpenSharedConnection();
@@ -56,6 +57,9 @@ namespace KSS.Tests
 
                         ep.DownloadLinks = b;
 
+                        ep.DownloadsExpire = GetDownloadExpiry(b);
+
+
                         lock (_db)
                         {
                             _db.Update(ep);
@@ -73,6 +77,36 @@ namespace KSS.Tests
             // Assert.NotNull(b);
             Assert.True(false);
             // Assert.True(b.Contains("<a"));
+        }
+
+        private DateTime GetDownloadExpiry(List<Episode.EpisodeDownloadLink> b)
+        {
+            var aLink = b.FirstOrDefault();
+            if (aLink == null)
+            {
+                return DateTime.Now.AddHours(2);
+            }
+
+            var uri = new Uri(aLink.Link);
+            var expires = uri.Query.Split('&').Where(x => x.ToUpperInvariant().Contains("EXPIRE")).FirstOrDefault();
+            if (aLink == null)
+            {
+                return DateTime.Now.AddHours(2);
+            }
+
+            var dtExpiry = ConvertUnixTimeStamp(expires);
+
+            if (!dtExpiry.HasValue)
+            {
+                return DateTime.Now.AddHours(2);
+            }
+
+            return dtExpiry.Value;
+        }
+
+        public static DateTime? ConvertUnixTimeStamp(string unixTimeStamp)
+        {
+            return new DateTime(1970, 1, 1, 0, 0, 0).AddMilliseconds(Convert.ToDouble(unixTimeStamp));
         }
 
         private List<Episode.EpisodeDownloadLink> getDownloadLinks(HtmlDocument all)

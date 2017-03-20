@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
+using KSS.Temp.Db;
 using NPoco;
 using Xunit;
 using Xunit.Abstractions;

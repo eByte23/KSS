@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using NPoco;
 using Xunit.Abstractions;
+using KSS.Temp.Db;
 
 namespace KSS.Tests
 {
@@ -89,18 +90,18 @@ namespace KSS.Tests
                  var getTable = alls.SelectMany(x => x.Elements("table").Where(y => y.Attributes.Any(z => z.Name == "class" && z.Value == "listing"))).FirstOrDefault();
                  var trTags = getTable.Elements("tr").Where(x => x.InnerText.Trim() != string.Empty && !x.Elements("th").Any());
 
-                 var li = trTags.ToList().Select(x =>
-                 {
-                     var rr = getShowFromRow(x);
-                     return new Store(rr.Id)
-                     {
-                         OurObject = rr
-                     };
-                 });
-                 lock (_db)
-                 {
-                     _db.InsertBatch(li);
-                 }
+                 //var li = trTags.ToList().Select(x =>
+                 //{
+                 //    var rr = getShowFromRow(x);
+                 //    //return new Store(rr.Id)
+                 //    //{
+                 //    //    OurObject = rr
+                 //    //};
+                 //});
+                 //lock (_db)
+                 //{
+                 //    _db.InsertBatch(li);
+                 //}
              });
 
             //if(_shows.Any()){
@@ -120,12 +121,12 @@ namespace KSS.Tests
 
             trTags.ToList().ForEach(x =>
             {
-                var rr = getShowFromRow(x);
+                //var rr = getShowFromRow(x);
 
-                _db.Insert(new Store(rr.Id)
-                {
-                    OurObject = rr
-                });
+                //_db.Insert(new Store(rr.Id)
+                //{
+                //    OurObject = rr
+                //});
             });
         }
 
@@ -237,11 +238,11 @@ namespace KSS.Tests
         }
 
 
-        [FactAttribute(Skip = " aaa")]
+        [FactAttribute]
         public void DDDD()
         {
             //new not working
-            string ciphertext = "oW2Tu6QesavjvmoDt2dKwI5Bx2jWmyFt5GwdX8k+nHSoC4woSjh23GuTxnUigv7jU2DInSOTihimHmc76hpc9WDd6+Jaq4on1mJyNLE6tOwaoYY4x+SK3BVhZQ3xtDZ8prd5THiqluxjK+w2n6ZUyljfpupeeZ0qATmNGoch0zbL7hBpagAc/ck1aAw6eAv2mcOcU4Ss9z0f48AKjLIqSnz+zsMfoU7HKtIa3xzxngdSfdx+h6gkG9DVK+las1MusXOCxXxQEPz4kFPDtUp2kzh9iCIeyIICyD4YoMw23szG0xp0+ZZsBFqAkU5Gs4k6hlgtB5jn/2LVsXOxpsuU7p2pt0MCV+HIOsrRe8vBmHCxFimOfJIvvgFYd8wNm+ZJmRuAhMZZZD7LCm1CAfjsrUGaXK+ai2Hb9EdwFnSigdyGw9jM++7yCS+BIUvIlUD8xuNCyKcoaXoRH2FAYMl2oYtPn6X4fYzuI3M/hchRl1cs7dwUreb2ntAQuQFKl3h/UfjbJ0RHfrmKiVtfw0K1S+SiJkk59u8qBvlDDJsvJXcwfJ+lAOeOpQD729NUlAKjQcydrFho3CqGc+vzDPf0DcpGWJrL1359hi8FErxDOoPoKZLm670i4bm9dfR1KDb6fZAXSBqWnt9xpp0FckHvG8jjhzoFA57raALOi6/9wv4R+GhfddW1ahLYo84QrzFIU3V0Pr/RHsWVQHbQngMuGYVPUeaNZY/uagVahOrA9U7QBr4ugMqlYEcJFg/36+RMxfItexph115u7Iomy9nuYeH7mfedXPZIqPyOYmO5qoUVKEWrzVBLsHKzJLBPRiqyZ3EJdijdB/lv9pBfRmVBhQo80XN5a9fw3fJfxe5mH+hFxhnHwYJj41O0+JNvycPFGWpoSOerHSuJONFFWYyDqg==";
+            string ciphertext = "fFBNlJf5rgvKqQo+hoPqkpj2E7ZO8tRvocwiMtgBAHpQj6lZmNz15O7lC7/uCRK6WPzD71xiXWqI6/V/4kYHdmGBcbo2HagzjArH5Ueo4ZPMeLkLPqk+9y6ClQpdsxDS5XHfTBCPGlaEH2T+VWD2ViXmUCqwF1zJ6Lv3MD/4YjttCwCE2TtFgzFYvAr6Wld3FKqcU1U+N5FK2w1FlwVT9w==";
             //old working
             //string ciphertext = "V00qDmblNuTM/roJZvWVZON3ghygHAzk27mQbijAEYu15bBt4TJxdHVyHVVJuxmD0RytpIzh5AgepPVnUBHcYLy1eNKLhWH1ibe140OAUzXjJqISmFjRnwpRvaCWw1w49I3CSv4aCxW9qyhoV9Yb26YLlZEt0EanAbfjx1F5Hli6D5ik6CAYiEKsCalNATLzCU/OGTm0engA6ShD2OogZUlRD9HlOP8ciN5l0TDWNQdX5Oo1Rsjp5SyQ9/8zxjQchI1XM75QlVgtmfCLeVK0BA==";
             var a = new DownloadLinkCrypto();
@@ -363,156 +364,5 @@ namespace KSS.Tests
     public class Pages
     {
         public int Page { get; set; }
-    }
-
-    [TableNameAttribute("shows"), PrimaryKeyAttribute("id", AutoIncrement = false)]
-    public class Show
-    {
-        public Show()
-        {
-        }
-
-        public Show(Guid id)
-        {
-            Id = id;
-        }
-        [ColumnAttribute("id")]
-        public Guid Id { get; set; }
-        [ColumnAttribute("name")]
-        public string Name { get; set; }
-        [ColumnAttribute("other_name")]
-        public string OtherName { get; set; }
-        [ColumnAttribute("summary")]
-        public string Summary { get; set; }
-        [ColumnAttribute("link")]
-        public string Link { get; set; }
-        [ColumnAttribute("status")]
-        public string Status { get; set; }
-        [ColumnAttribute("genres"), SerializedColumnAttribute]
-        public List<string> Genres { get; set; }
-        [ColumnAttribute("popular")]
-        public bool Popular { get; set; }
-        [ColumnAttribute("just_updated")]
-        public bool JustUpdate { get; set; }
-        [ColumnAttribute("cover_link")]
-        public string CoverLink { get; set; }
-
-        [ColumnAttribute("related_links")]
-        public List<string> RelatedLinks { get; set; }
-        [ColumnAttribute("views")]
-        public ulong Views { get; set; }
-    }
-
-    [TableNameAttribute("episodes"), PrimaryKey("id", AutoIncrement = false)]
-    public class Episode
-    {
-        public Episode()
-        {
-        }
-
-        public Episode(Guid showId) : this(showId, null)
-        {
-        }
-
-        public Episode(Guid showId, Guid? episodeId)
-        {
-            ShowId = showId;
-            Id = episodeId.HasValue ? episodeId.Value : Guid.NewGuid();
-        }
-
-        [ColumnAttribute("id")]
-        public Guid Id { get; set; }
-
-        [ColumnAttribute("show_id")]
-        public Guid ShowId { get; set; }
-
-        [ColumnAttribute("link")]
-        public string Link { get; set; }
-
-        [ColumnAttribute("number")]
-        public int Number { get; set; }
-
-        [ColumnAttribute("related_links")]
-        //public List<string> RelatedLinks { get; set; }
-        public string RelatedLinks { get; set; }
-
-        [ColumnAttribute("file_name")]
-        public string FileName { get; set; }
-
-        [ColumnAttribute("download_links"), SerializedColumnAttribute]
-        public List<EpisodeDownloadLink> DownloadLinks { get; set; }
-
-        [ColumnAttribute("date_added")]
-        public DateTime DateAdded { get; set; }
-
-        public class EpisodeDownloadLink
-        {
-            public EpisodeDownloadLink() { }
-            public EpisodeDownloadLink(string typeName, string link)
-            {
-                TypeName = typeName;
-                SetDownloadType(TypeName);
-                Link = link;
-            }
-
-            public DownloadTypes Type { get; set; }
-            public string TypeName { get; set; }
-            public string Link { get; set; }
-
-            private void SetDownloadType(string typeName)
-            {
-                switch (typeName)
-                {
-                    case RES_360p:
-                    case RES_480p:
-                        Type = DownloadTypes.SD;
-                        break;
-
-                    case RES_720p:
-                        Type = DownloadTypes.SD;
-                        break;
-
-                    case RES_1080p:
-                        Type = DownloadTypes.SD;
-                        break;
-
-                    default:
-                        Type = DownloadTypes.Unknown;
-                        break;
-                }
-            }
-        }
-
-        public enum DownloadTypes
-        {
-            FullHD = 0,
-            HD = 1,
-            SD = 2,
-            Unknown = 4
-        }
-        public const string RES_1080p = "1080";
-        public const string RES_720p = "720";
-        public const string RES_480p = "480";
-        public const string RES_360p = "360";
-
-    }
-
-    [TableName("store"), PrimaryKey("id", AutoIncrement = false)]
-    public class Store
-    {
-        public Store()
-        {
-
-        }
-        public Store(Guid id)
-        {
-            this.Id = id;
-        }
-
-        [Column("id")]
-        public Guid Id { get; private set; }
-
-        [Column("our_object"), SerializedColumnAttribute]
-        public object OurObject { get; set; }
     }
 }
