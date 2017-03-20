@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-    <PackageTargetFallback>netcore45;</PackageTargetFallback>
+    <PackageTargetFallback>netcore45;net45;</PackageTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,12 +21,6 @@
     <PackageReference Include="SapientGuardian.MySql.Data" Version="*" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="TestData\">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Folder>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\KSS\KSS.csproj" />
   </ItemGroup>
 
@@ -34,18 +28,9 @@
     <None Update="appsettings*.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\**\*">
+    <!--<None Update="TestData\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\selected-anime.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\specific-episode-multiple-res-google.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\specific-episode-openload.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </None>-->
   </ItemGroup>
 
 </Project>

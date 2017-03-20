@@ -2,7 +2,7 @@
   "name": "kss",
   "version": "1.0.0",
   "description": "",
-  "main": "test.js",
+  "main": "app.js",
   "directories": {
     "test": "tests"
   },
@@ -20,6 +20,9 @@
   },
   "homepage": "https://github.com/ebyte23/KSS#readme",
   "dependencies": {
-    "crypto-js": "^3.1.9-1"
+    "cloudscraper": "^1.4.1",
+    "crypto-js": "^3.1.9-1",
+    "node-horseman": "^3.2.0",
+    "phantomjs": "^2.1.7"
   }
 }

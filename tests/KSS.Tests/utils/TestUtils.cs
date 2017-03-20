@@ -8,8 +8,7 @@ namespace KSS.Tests.utils
         public static HtmlDocument GetTestDataPage(string htmlDocPath)
         {
             var doc = new HtmlDocument();
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), htmlDocPath);
-            var testAnimeListContent = File.ReadAllText(filePath);
+            var testAnimeListContent = File.ReadAllText(htmlDocPath);
             doc.LoadHtml(testAnimeListContent);
 
             return doc;
